@@ -15,7 +15,7 @@ class Watcher:
 
     def load_content_L3plus(self):
         try:
-            r = requests.get('http://' + self.miner_ip + '/cgi-bin/minerStatus.cgi')
+            r = requests.get('http://' + self.miner_ip + '/cgi-bin/minerStatus.cgi', auth=('root', 'root'))
         except Exception as e:
             print("Cannot connect to the specified IP.")
             print("Maybe, the wrong address or not L3+ device.")
