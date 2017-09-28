@@ -2,6 +2,7 @@
 # Прототип
 
 import requests
+from requests.auth import HTTPDigestAuth
 import re
 import argparse
 import time
@@ -20,11 +21,8 @@ class Watcher:
 
     def load_html_content(self):
         try:
-            s = requests.Session()
-            r = s.get(self.miner_url, auth=('root', 'root'))
-            if r.status_code == 200:
-                r = s.get(self.miner_url)
-            else:
+            r = requests.get(self.miner_url, auth=HTTPDigestAuth(self.user, self.pasw))
+            if r.status_code != 200:
                 print("Authorization error")
                 return ''
         except Exception as e:
