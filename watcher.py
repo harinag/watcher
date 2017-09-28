@@ -9,8 +9,10 @@ import time
 class Watcher:
     """ Logs collector class """
     
-    def __init__(self, ip):
+    def __init__(self, ip, user, pasw):
         self.miner_ip = ip
+        self.user = user if user else 'root'
+        self.pasw = pasw if pasw else 'root'
         self.miner_url = 'http://' + self.miner_ip + '/cgi-bin/minerStatus.cgi'
         self.html_content = ''
         self.log_file_name = self.miner_ip + '.log'
@@ -18,7 +20,13 @@ class Watcher:
 
     def load_html_content(self):
         try:
-            r = requests.get(self.miner_url, auth=('root', 'root'))
+            s = requests.Session()
+            r = s.get(self.miner_url, auth=('root', 'root'))
+            if r.status_code == 200:
+                r = s.get(self.miner_url)
+            else:
+                print("Authorization error")
+                return ''
         except Exception as e:
             print("Cannot connect to the specified IP.")
             print("Maybe, the wrong address or not L3+ device.")
@@ -87,13 +95,15 @@ class Watcher:
 
 # Parse command line args
 parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--test', help='for testing only', action='store_true')
-parser.add_argument('-r', '--run', help='run watcher', action='store_true')
+parser.add_argument('-t', '--test', help='For testing only', action='store_true')
+parser.add_argument('-r', '--run', help='Run watcher', action='store_true')
+parser.add_argument('-u' ,'--user', help='User name for Antminer control panel')
+parser.add_argument('-p' ,'--pasw', help='Password for Antminer control panel')
 parser.add_argument('ip', help='Miner IP address in LAN')
 args = parser.parse_args()
+
 # Logging
-miner_ip = args.ip
-w = Watcher(miner_ip)
+w = Watcher(args.ip, args.user, args.pasw)
 if args.test:
     w.miner_url = 'http://localhost/AntMiner.html'
 w.load_html_content()
