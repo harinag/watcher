@@ -81,12 +81,13 @@ class Watcher:
         print("Watcher is running. Press CTRL+C to stop")
         print("Logging to file: " + self.log_file_name)
         while True:
+            self.load_html_content()
             log_str = self.parse_html()
             with open(self.log_file_name, 'a') as f:
                 f.write('\n===\n{}\n{}\n'.format(time.strftime('%d.%m.%Y %H:%M:%S'), log_str))
             counter += 1
             print('Lines logged: {} \r'.format(counter,), flush=True, end='')
-            time.sleep(1)
+            time.sleep(3)
 
 
 # Start
@@ -104,8 +105,8 @@ args = parser.parse_args()
 w = Watcher(args.ip, args.user, args.pasw)
 if args.test:
     w.miner_url = 'http://localhost/AntMiner.html'
-w.load_html_content()
 if args.run:
     w.run()
 else:
+    w.load_html_content()
     w.parse_html()
