@@ -1,5 +1,7 @@
 AntMiner.html
 *.log
+*_log.txt
+claymore/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
