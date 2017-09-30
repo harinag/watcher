@@ -3,49 +3,36 @@
 import os
 import time
 import glob
+import logging
+from watchdog.observers import Observer
+import watchdog.events
 
-class Claymologger:
-    """ Claymore log file parser class """
+class MyHandler(watchdog.events.FileSystemEventHandler):
+    """ Handler for Observer scheduler """
 
-    def __init__(self):
-        self.logfile_name, self.logfile_time = self.get_last_logfile_name()
+    def on_modified(self, event):
+        print(event, flush=True)
 
-
-    def get_last_logfile_name(self):
-        path = os.path.dirname(os.path.abspath(__file__))
-        flist = glob.glob(os.path.join(path, '*_log.txt'))
-        flist.sort(key = lambda x: os.path.getmtime(x), reverse=True)
-        return (flist[0], os.path.getmtime(flist[0]))
-
-
-    def parse_file(self):
-        with open(self.logfile_name) as f:
-            print(f.tell(), flush=True)
-            f.readline()
-            print(f.tell(), flush=True)
-            f.readline()
-            print(f.tell(), flush=True)
-            f.readline()
-            print(f.tell(), flush=True)
-            f.readline()
-            print(f.tell(), flush=True)
+    def on_created(self, event):
+        print(event, flush=True)
 
 
-    def file_changed(self):
-        lstf = self.get_last_logfile_name()
-        if lstf[0] != self.logfile_name or lstf[1] != self.logfile_time:
-            return True
-        return False
+# Start point
 
+obs = Observer()
+hndl = MyHandler()
+obs.schedule(hndl, '.', recursive=False)
+obs.start()
+prop = '\|/-'
+i = 0
+try:
+    while True:
+        print('Logging ' + prop[i], end='\r', flush=True)
+        i += 1
+        if i == 4: i = 0
+        time.sleep(0.5)
+except (KeyboardInterrupt, SystemExit):
+    print('\nCTRL+C detected! Stop logging.', flush=True)
+    obs.stop()
+obs.join()
 
-    def run(self):
-        self.parse_file()
-        while True:
-            time.sleep(3)
-            if self.file_changed():
-                self.parse_file()
-
-
-
-g = Claymologger()
-g.run()
