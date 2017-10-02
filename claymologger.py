@@ -32,15 +32,16 @@ class MyHandler(watchdog.events.FileSystemEventHandler):
             self.__class__.current_file = fname
             self.__class__.current_seek = 0
             self.log_to_console('Swithced to new log file: ' + event.src_path)
+            with open(self.current_file, 'r') as f:
+                f.seek(0,2)
+                self.current_seek = f.tell()
 
 
     def parse_lines(self):
         with open(self.current_file, 'r') as f:
             f.seek(self.current_seek)
-            cnt = 0
             for line in f:
-                cnt += 1
-            self.log_to_console('Lines parsed: ' + str(cnt))
+                self.log_to_console('### ' + line)            
             self.current_seek = f.tell()
 
 
