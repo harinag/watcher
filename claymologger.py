@@ -6,6 +6,7 @@ import re
 from watchdog.observers import Observer
 import watchdog.events
 import json
+import requests
 
 
 class MyHandler(watchdog.events.FileSystemEventHandler):
@@ -15,7 +16,6 @@ class MyHandler(watchdog.events.FileSystemEventHandler):
     current_seek = 0
 
     def on_modified(self, event):
-        print("-M-", flush=True)
         if event.is_directory:
             return
         fname = event.src_path
@@ -26,7 +26,6 @@ class MyHandler(watchdog.events.FileSystemEventHandler):
 
 
     def on_created(self, event):
-        print("-C-", flush=True)
         if event.is_directory:
             return
         fname = event.src_path
@@ -47,11 +46,11 @@ class MyHandler(watchdog.events.FileSystemEventHandler):
                 print("Trouble with seek call", flush=True)
                 return
             for line in f:
-                print("Processing: " + line)
                 if len(line) < 3: continue
                 j = self.parse_line(line)
-                #self.log_to_server(j)
-                if j: self.log_to_console('Logged: ' + j)
+                if j: 
+                    self.log_to_console('Logged: ' + j)
+                    self.log_to_server(j)
             self.current_seek = f.tell()
 
 
@@ -105,6 +104,15 @@ class MyHandler(watchdog.events.FileSystemEventHandler):
         # Now j contains found data (if did) 
         if 'unchanged' in j: return None
         else: return json.dumps(j)
+
+
+    def log_to_server(self, msg):
+        url = 'http://zenmining.com/logs/receive'
+        r = requests.post(url, data=msg, headers = {'Content-Type' : 'application/json'})
+        if r.status_code == requests.codes.ok:
+            print('Log sent to server', flush=True)
+        else:
+            print('!!! Error when sending log to server', flush=True)
 
 
     def log_to_console(self, msg):
